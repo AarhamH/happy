@@ -34,3 +34,24 @@ instance Applicative Parser where
 instance Monad Parser where
     return = unit
     (>>=) = bind
+
+instance MonadPlus Parser where
+    mzero = failure
+    mplus = combine
+
+instance Alternative Parser where
+    empty = mzero
+    (<|>) = option
+
+combine :: Parser a -> Parser b -> Parser a
+combine a b = Parser (\s parser a s ++ parser b s)
+
+failure :: Parser a 
+failure = Parser (\s -> [])
+
+option :: Parser a -> Parser a -> Parser as
+option a b = Parser $ \s -> case parse a s of
+    []   -> parse b s
+    res  -> res
+
+

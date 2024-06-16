@@ -84,3 +84,38 @@ p 'chainl1' a = do {a<-p; reset a}
                        b <- p
                        rest (f a b))
                     <|> return a
+
+{-- Combinators --}
+char :: Char -> Parser Char
+char c = satisfy (c ==)
+
+natural :: Parser Integer
+natural = read <$> some (satisfy isDigit)
+
+string :: String -> Parser String
+string [] = return []
+string (c:cs) = do { char c; string cs; return (c:cs)}
+
+token :: Parser a -> Parser a
+token p = do { a <- p; spaces ; return a}
+
+reserved :: String -> Parser String
+reserved s = token (string s)
+
+spaces :: Parser String
+spaces = many $ oneOf ” \n\r”
+
+digit :: Parser Char
+digit = satisfy isDigit
+
+number :: Parser Int
+number = do
+    s <- string ”-” <|> return []
+    cs <- some digit
+    return $ read (s ++ cs)
+parens :: Parser a -> Parser a
+parens m = do
+    reserved ”(”
+    n <- m
+    reserved ”)”
+    return n

@@ -39,10 +39,6 @@ instance MonadPlus Parser where
     mzero = failure
     mplus = combine
 
-instance Alternative Parser where
-    empty = mzero
-    (<|>) = option
-
 combine :: Parser a -> Parser b -> Parser a
 combine a b = Parser (\s parser a s ++ parser b s)
 
@@ -54,4 +50,37 @@ option a b = Parser $ \s -> case parse a s of
     []   -> parse b s
     res  -> res
 
+instance Alternative Parser where
+    empty = mzero
+    (<|>) = option
 
+{--
+    many: apply a function until failure; return the result
+    some: apply a function until there is a failure; will fail if there isn't atleast one match    
+--}
+many :: fa -> f[a]
+many v = many_v where
+    many_v = some_v <|> pure []
+    some_v = (:)
+
+some :: f a -> f[a]
+some v = some _v where
+    many_v = some_v <|> pure []
+    some_v = (:) <$> v <*> many_v
+
+satisfy :: (Char, Bool) -> Parser Char
+satisfy p = item 'bind' \c ->
+    if p c then unit c else (Parser (\cs -> []))
+
+oneOf :: [Char] -> Parser Char
+oneOf s = satisfy (flip elem s)
+
+chainl :: Parser a -> Parser (a->a->a)->a->Parser a
+chainl p op a = (p 'chainl1' op) <|> return a
+
+chainl1 :: Parser a -> Parser (a->a->a)->Parser as
+p 'chainl1' a = do {a<-p; reset a}
+    where rest a = (do f <- op
+                       b <- p
+                       rest (f a b))
+                    <|> return a

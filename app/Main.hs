@@ -1,4 +1,7 @@
 module Main where
-
+import Parser
+import System.Environment (getArgs)
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = do
+  (expr:_) <- getArgs
+  putStrLn (readExpr expr) 

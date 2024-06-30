@@ -60,6 +60,7 @@ executable happylang
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
+    other-modules:    Parser
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
@@ -68,7 +69,7 @@ executable happylang
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.1.0
+    build-depends:    base ^>=4.17.1.0, parsec
 
     -- Directories containing source files.
     hs-source-dirs:   app

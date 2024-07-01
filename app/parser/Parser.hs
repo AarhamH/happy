@@ -6,7 +6,7 @@ import Values
 import Control.Monad
 
 symbol :: Parser Char 
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+symbol = oneOf "!#$%&|*+-/:<=>?@^_~a"
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -26,16 +26,16 @@ parseList = liftM List $ sepBy parseExpr spaces
 
 parseImproperList :: Parser Values
 parseImproperList = do
-    head <- endBy parseExpr spaces
-    tail <- char '.' >> spaces >> parseExpr
-    return $ ImproperList head tail
+    lhead <- endBy parseExpr spaces
+    ltail <- char '.' >> spaces >> parseExpr
+    return $ ImproperList lhead ltail
 
 parseNumber :: Parser Values
 parseNumber = liftM (Number . read) $ many1 digit
 
 parseQuoted :: Parser Values
 parseQuoted = do
-    char '\''
+    _ <- char '\''
     x <- parseExpr
     return $ List [Atom "quote", x]
 
@@ -55,7 +55,8 @@ parseString = do
     x <- many (noneOf "\"")
     _ <- char '"'
     return $ String x
-readExpr :: String -> String
+
+readExpr :: String -> Values
 readExpr input = case parse parseExpr "lisp" input of
-    Left err -> "No match: " ++ show err
-    Right _ -> "Found value"
+    Left err -> String $ "No match: " ++ show err
+    Right val -> val

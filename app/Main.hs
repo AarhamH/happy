@@ -4,4 +4,4 @@ import Evaluator
 import System.Environment (getArgs)
 
 main :: IO ()
-main = getArgs >>= print . evaluate . readExpr . head
+main = getArgs >>= print . evaluateExpr . readExpr . head

@@ -60,7 +60,7 @@ executable happylang
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
-    other-modules:    Parser, Values
+    other-modules:    Parser, Values, Evaluator, Operators
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
@@ -72,7 +72,7 @@ executable happylang
     build-depends:    base ^>=4.17.1.0, parsec
 
     -- Directories containing source files.
-    hs-source-dirs:   app, app/parser, app/types
+    hs-source-dirs:   app, app/parser, app/types, app/evaluator
 
     -- Base language which the package is written in.
     default-language: Haskell2010

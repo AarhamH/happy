@@ -4,6 +4,7 @@ module Parser where
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Values
 import Control.Monad
+import Control.Monad.Except
 
 symbol :: Parser Char 
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~a"
@@ -56,7 +57,7 @@ parseString = do
     _ <- char '"'
     return $ String x
 
-readExpr :: String -> Values
+readExpr :: String -> ThrowsError Values
 readExpr input = case parse parseExpr "lisp" input of
-    Left err -> String $ "No match: " ++ show err
-    Right val -> val
+    Left err -> throwError $ Parser err
+    Right val -> return val

@@ -1,8 +1,9 @@
 module Operators where
 
 import Values
+import Control.Monad.Except
 
-operators :: [(String, [Values] -> Values)]
+operators :: [(String, [Values] -> ThrowsError Values)]
 operators = [ ("+", numberOp (+))
             , ("-", numberOp (-))
             , ("*", numberOp (*))
@@ -12,15 +13,16 @@ operators = [ ("+", numberOp (+))
             , ("remainder", numberOp rem) 
             ]
 
-numberOp :: (Integer -> Integer -> Integer) -> [Values] -> Values
-numberOp op a = Number $ foldl1 op $ map numberUnpacker a
+numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values
+numberOp op [] = throwError $ ArgumentNumber 2 []
+numberOp op singleVal@[_] = throwError $ ArgumentNumber 2 singleVal
+numberOp op params = mapM numberUnpacker params >>= return . Number . foldl1 op
 
-numberUnpacker :: Values -> Integer
-numberUnpacker (Number n) = n
-numberUnpacker (String s) = let parsed = reads s in
-    if null parsed
-        then 0
-        else fst $ parsed !! 0
+numberUnpacker :: Values -> ThrowsError Integer
+numberUnpacker (Number n) = return n
+numberUnpacker (String s) = let parsed = reads s in if null parsed 
+                                                    then throwError $ TypeMismatch "number" $ String s
+                                                    else return $ fst $ parsed !! 0
 numberUnpacker (List [n]) = numberUnpacker n
-numberUnpacker _ = 0
+numberUnpacker notNum = throwError $ TypeMismatch "number" notNum
 

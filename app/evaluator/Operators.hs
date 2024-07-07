@@ -13,6 +13,11 @@ operators = [ ("+", numberOp (+))
             , ("quotient", numberOp quot)
             , ("remainder", numberOp rem)
             , ("=", boolOp (==))
+            , ("~=", boolOp (/=))
+            , ("<=", boolOp (<=))
+            , (">=", boolOp (>=))
+            , ("<", boolOp (<))
+            , (">", boolOp (>))
   ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values

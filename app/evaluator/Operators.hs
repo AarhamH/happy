@@ -12,13 +12,21 @@ operators = [ ("+", numberOp (+))
             , ("mod", numberOp mod)
             , ("quotient", numberOp quot)
             , ("remainder", numberOp rem)
-            , ("=", boolOp (==))
-            , ("~=", boolOp (/=))
-            , ("<=", boolOp (<=))
-            , (">=", boolOp (>=))
-            , ("<", boolOp (<))
-            , (">", boolOp (>))
-  ]
+            , ("=", eqOp (==))
+            , ("~=", eqOp (/=))
+            , ("<=", eqOp (<=))
+            , (">=", eqOp (>=))
+            , ("<", eqOp (<))
+            , (">", eqOp (>))
+            , ("&&", boolOp (&&))
+            , ("||", boolOp (||))
+            , ("string=?", stringOp (==))
+            , ("string~=?", stringOp (/=))
+            , ("string>?", stringOp (>))
+            , ("string<?", stringOp (<))
+            , ("string>=?", stringOp (>=))
+            , ("string<=?", stringOp (<=))
+            ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values
 numberOp _ [] = throwError $ ArgumentNumber 2 []
@@ -33,6 +41,16 @@ numberUnpacker (String s) = let parsed = reads s in if null parsed
 numberUnpacker (List [n]) = numberUnpacker n
 numberUnpacker notNum = throwError $ TypeMismatch "number" notNum
 
+boolUnpacker :: Values -> ThrowsError Bool
+boolUnpacker (Bool bool) = return bool
+boolUnpacker errVal = throwError $ TypeMismatch "Boolean" errVal
+
+stringUnpacker :: Values -> ThrowsError String
+stringUnpacker (String str) = return str
+stringUnpacker (Number num) = return $ show num
+stringUnpacker (Bool bool) = return $ show bool
+stringUnpacker notStr = throwError $ TypeMismatch "string" notStr
+
 boolOpBase :: (Values -> ThrowsError a) -> (a -> a -> Bool) -> [Values] -> ThrowsError Values
 boolOpBase unpackerf op args = if length args /= 2
                            then throwError $ ArgumentNumber 2 args
@@ -40,5 +58,11 @@ boolOpBase unpackerf op args = if length args /= 2
                                    right <- unpackerf $ args !! 1
                                    return $ Bool $ left `op` right
 
-boolOp :: (Integer -> Integer -> Bool) -> [Values] -> ThrowsError Values
-boolOp = boolOpBase numberUnpacker
+eqOp :: (Integer -> Integer -> Bool) -> [Values] -> ThrowsError Values
+eqOp = boolOpBase numberUnpacker
+
+boolOp :: (Bool -> Bool -> Bool) -> [Values] -> ThrowsError Values
+boolOp = boolOpBase boolUnpacker
+
+stringOp :: (String -> String -> Bool) -> [Values] -> ThrowsError Values
+stringOp = boolOpBase stringUnpacker

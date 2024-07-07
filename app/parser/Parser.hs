@@ -3,10 +3,9 @@ module Parser where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Values
-import Control.Monad
 import Control.Monad.Except
 
-symbol :: Parser Char 
+symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~a"
 
 spaces :: Parser ()
@@ -23,7 +22,7 @@ parseAtom = do
         _ -> Atom atom
 
 parseList :: Parser Values
-parseList = liftM List $ sepBy parseExpr spaces
+parseList = List <$> sepBy parseExpr spaces
 
 parseImproperList :: Parser Values
 parseImproperList = do
@@ -32,7 +31,7 @@ parseImproperList = do
     return $ ImproperList lhead ltail
 
 parseNumber :: Parser Values
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber = Number . read <$> many1 digit
 
 parseQuoted :: Parser Values
 parseQuoted = do

@@ -60,7 +60,7 @@ executable happylang
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
-    other-modules:    Parser, Values, Evaluator, Operators, ListConstructors
+    other-modules:    Parser, Values, Evaluator, Operators
 
     -- Modules included in this executable, other than Main.
     -- other-modules:

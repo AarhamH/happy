@@ -29,6 +29,7 @@ operators = [ ("+", numberOp (+))
             , ("string<=?", stringOp (<=))
             , ("head", listHead)
             , ("tail", listTail)
+            , ("cons", listConstruct)
             ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values

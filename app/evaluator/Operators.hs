@@ -2,7 +2,6 @@ module Operators where
 
 import Values
 import Control.Monad.Except
-import ListConstructors
 import qualified Data.Functor
 
 operators :: [(String, [Values] -> ThrowsError Values)]
@@ -30,6 +29,7 @@ operators = [ ("+", numberOp (+))
             , ("head", listHead)
             , ("tail", listTail)
             , ("cons", listConstruct)
+            , ("weq", weakEq)
             ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values
@@ -70,3 +70,36 @@ boolOp = boolOpBase boolUnpacker
 
 stringOp :: (String -> String -> Bool) -> [Values] -> ThrowsError Values
 stringOp = boolOpBase stringUnpacker
+
+listHead :: [Values] -> ThrowsError Values
+listHead [List(x:_)] = return x
+listHead [ImproperList(x:_) _] = return x
+listHead [badType] = throwError $ TypeMismatch "pair" badType
+listHead badArgs = throwError $ ArgumentNumber 1 badArgs
+
+listTail :: [Values] -> ThrowsError Values
+listTail [List(_:xs)] = return $ List xs
+listTail [ImproperList[_] xs] = return xs
+listTail [ImproperList(_:xs) xs1] = return $ ImproperList xs xs1
+listTail [badType] = throwError $ TypeMismatch "pair" badType
+listTail badArgs = throwError $ ArgumentNumber 1 badArgs
+
+listConstruct :: [Values] -> ThrowsError Values
+listConstruct [x, List []] = return $ List [x]
+listConstruct [x, List xs] = return $ List (x:xs)
+listConstruct [x, ImproperList xs xs1] = return $ ImproperList (x:xs) xs1
+listConstruct [x, y] = return $ ImproperList [x] y
+listConstruct badList = throwError $ ArgumentNumber 2 badList
+
+weakEq :: [Values] -> ThrowsError Values
+weakEq [Bool a1, Bool a2] = return $ Bool $ a1 == a2
+weakEq [Number a1, Number a2] = return $ Bool $ a1 == a2
+weakEq [String a1, String a2] = return $ Bool $ a1 == a2
+weakEq [Atom a1, Atom a2] = return $ Bool $ a1 == a2
+weakEq [ImproperList xs x, ImproperList ys y] = weakEq [List $ xs ++ [x], List $ ys ++ [y]]
+weakEq [List a1, List a2] = return $ Bool $ length a1 == length a2 && all pairs (zip a1 a2)
+        where pairs (x,y) = case weakEq [x,y] of
+                Right (Bool val) -> val
+                _ -> False 
+weakEq [_,_] = return $ Bool False
+weakEq badList = throwError $ ArgumentNumber 2 badList

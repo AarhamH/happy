@@ -2,6 +2,7 @@ module Operators where
 
 import Values
 import Control.Monad.Except
+import ListConstructors
 import qualified Data.Functor
 
 operators :: [(String, [Values] -> ThrowsError Values)]
@@ -26,6 +27,9 @@ operators = [ ("+", numberOp (+))
             , ("string<?", stringOp (<))
             , ("string>=?", stringOp (>=))
             , ("string<=?", stringOp (<=))
+            , ("head", listHead)
+            , ("tail", listTail)
+            , ("cons", listConstruct)
             ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values

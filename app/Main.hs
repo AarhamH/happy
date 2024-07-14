@@ -18,11 +18,11 @@ responsePrint :: String -> IO ()
 responsePrint expr = evaluateString expr >>= putStrLn
 
 killCondition :: Monad m => (a->Bool) -> m a -> (a -> m ()) -> m ()
-killCondition pred prompt action = do
+killCondition predicate prompt action = do
     result <- prompt
-    if pred result
+    if predicate result
         then return ()
-        else action result >> killCondition pred prompt action
+        else action result >> killCondition predicate prompt action
 
 run :: IO ()
 run = killCondition (== "q") (readInput ":) >> ") responsePrint

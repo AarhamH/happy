@@ -3,6 +3,10 @@ module Values where
 import Control.Monad.Except
 import Text.ParserCombinators.Parsec ( ParseError )
 
+import Data.IORef
+import qualified Data.Functor
+import qualified Data.Maybe
+
 data Values = Atom String
             | List [Values]
             | ImproperList [Values] Values
@@ -19,9 +23,9 @@ data Errors = ArgumentNumber Integer [Values]
                | Default String
 
 unwordsList :: [Values] -> String
-unwordsList = unwords . map showValue 
+unwordsList = unwords . map showValue
 
-showValue :: Values -> String 
+showValue :: Values -> String
 showValue (Atom name) = name
 showValue (String contents) = "\"" ++ contents ++ "\""
 showValue (Number contents) = show contents
@@ -50,3 +54,20 @@ trapError action = catchError action (return . show)
 extractValue :: ThrowsError a -> a
 extractValue (Right val) = val
 extractValue (Left err) = error $ "Error: " ++ show err
+
+type IOEnvironment  = IORef [(String, IORef Values)]
+
+nullEnv :: IO IOEnvironment
+nullEnv = newIORef []
+
+type IOThrowsError = ExceptT Errors IO
+
+liftThrows :: ThrowsError a -> IOThrowsError a
+liftThrows (Left err) = throwError err
+liftThrows (Right val) = return val
+
+runIOThrows :: IOThrowsError String -> IO String
+runIOThrows action = runExceptT (trapError action) Data.Functor.<&> extractValue
+
+isBound :: IOEnvironment -> String -> IO Bool
+isBound envRef var = readIORef envRef Data.Functor.<&> (Data.Maybe.isJust . lookup var)

@@ -1,5 +1,7 @@
 module Variables where
 import Values
+import Control.Monad.Except
+import Data.IORef
 
 getVar :: IOEnvironment -> String -> IOThrowsError Values
 getVar envRef var  =  do env <- liftIO $ readIORef envRef
@@ -24,7 +26,6 @@ defineVar envRef var value = do
              env <- readIORef envRef
              writeIORef envRef ((var, valueRef) : env)
              return value
-
 
 bindVars :: IOEnvironment -> [(String, Values)] -> IO IOEnvironment
 bindVars envRef bindings = readIORef envRef >>= extendEnv bindings >>= newIORef

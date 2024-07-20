@@ -3,6 +3,7 @@ import Values
 import Operators
 import Control.Monad.Except
 import Variables
+import Data.Maybe (isNothing)
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args

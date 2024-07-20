@@ -12,7 +12,7 @@ getVar envRef var  =  do env <- liftIO $ readIORef envRef
 setVar :: IOEnvironment -> String -> Values -> IOThrowsError Values
 setVar envRef var value = do env <- liftIO $ readIORef envRef
                              maybe (throwError $ UnboundVar "Setting an unbound variable" var)
-                                   (liftIO . (flip writeIORef value))
+                                   (liftIO . (`writeIORef` value))
                                    (lookup var env)
                              return value
 
@@ -29,6 +29,6 @@ defineVar envRef var value = do
 
 bindVars :: IOEnvironment -> [(String, Values)] -> IO IOEnvironment
 bindVars envRef bindings = readIORef envRef >>= extendEnv bindings >>= newIORef
-     where extendEnv bindings env = liftM (++ env) (mapM addBinding bindings)
+     where extendEnv fbindings env = fmap (++ env) (mapM addBinding fbindings)
            addBinding (var, value) = do ref <- newIORef value
                                         return (var, ref)

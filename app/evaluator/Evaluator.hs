@@ -4,8 +4,26 @@ import Operators
 import Control.Monad.Except
 import Variables
 
-apply :: String -> [Values] -> ThrowsError Values
-apply f a = maybe (throwError $ NotFunction "Unrecognized primitive function args" f) ($ a) (lookup f operators)
+apply :: Values -> [Values] -> ExceptT Errors IO Values
+apply (PrimitiveFunc func) args = liftThrows $ func args
+apply (Func fparams varargs fbody fclosure) args =
+     if num fparams /= num args && isNothing varargs
+          then throwError $ ArgumentNumber (num fparams) args
+          else liftIO (bindVars fclosure $ zip fparams args) >>= bindVarArgs varargs >>= evalBody
+     where remainingArgs = drop (length fparams) args
+           num = toInteger . length
+           evalBody env = last <$> mapM (evaluateExpr env) fbody
+           bindVarArgs arg env = case arg of
+                Just argName -> liftIO $ bindVars env [(argName, List remainingArgs)]
+                Nothing -> return env
+apply _ _ = throwError $ Default "Unknown error"
+
+makeFunc :: Monad m => Maybe String -> IOEnvironment -> [Values] -> [Values] -> m Values
+makeFunc varargs env fparams fbody = return $ Func (map showValue fparams) varargs fbody env
+makeNormalFunc :: IOEnvironment -> [Values] -> [Values] -> ExceptT Errors IO Values
+makeNormalFunc = makeFunc Nothing
+makeVarArgs :: Values -> IOEnvironment -> [Values] -> [Values] -> ExceptT Errors IO Values
+makeVarArgs = makeFunc . Just . showValue
 
 evaluateExpr :: IOEnvironment -> Values -> IOThrowsError Values
 evaluateExpr env val@(String _) = return val

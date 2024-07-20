@@ -35,6 +35,12 @@ showValue (List contents) = "(" ++ unwordsList contents ++ ")"
 showValue (ImproperList lhead ltail) = "(" ++ unwordsList lhead ++ " . " ++ showValue ltail ++ ")"
 showValue (Bool True) = "#t"
 showValue (Bool False) = "#f"
+showValue (PrimitiveFunc _) = "<primitive>"
+showValue (Func {params = args, vararg = varargs, body = _, closure = _}) =
+   "(lambda (" ++ unwords (map show args) ++
+      (case varargs of
+         Nothing -> ""
+         Just arg -> " . " ++ arg) ++ ") ...)"
 
 showError :: Errors -> String
 showError (UnboundVar msg var) = msg ++ ": " ++ var

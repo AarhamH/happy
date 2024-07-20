@@ -15,6 +15,8 @@ data Values = Atom String
             | Bool Bool
             | PrimitiveFunc ([Values] -> ThrowsError Values)
             | Func { params :: [String], vararg :: Maybe String, body :: [Values], closure :: IOEnvironment }
+            | IOFunc ([Values] -> IOThrowsError Values)
+            | Port Handle
 
 data Errors = ArgumentNumber Integer [Values]
                | TypeMismatch String Values

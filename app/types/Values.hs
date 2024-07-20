@@ -13,6 +13,8 @@ data Values = Atom String
             | Number Integer
             | String String
             | Bool Bool
+            | PrimitiveFunc ([Values] -> ThrowsError Values)
+            | Func { params :: [String], vararg :: Maybe String, body :: [Values], closure :: IOEnvironment }
 
 data Errors = ArgumentNumber Integer [Values]
                | TypeMismatch String Values

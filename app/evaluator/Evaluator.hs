@@ -38,5 +38,15 @@ evaluateExpr env (List [Atom "if", p, c, a]) =
              _  -> evaluateExpr env c
 evaluateExpr env (List [Atom "set!", Atom var, form]) = evaluateExpr env form >>= setVar env var
 evaluateExpr env (List [Atom "define", Atom var, form]) = evaluateExpr env form >>= defineVar env var
-evaluateExpr env (List (Atom func : args)) = mapM (evaluateExpr env) args >>= liftThrows . apply func
-evaluateExpr env badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
+evaluateExpr env (List (Atom "define" : List (Atom var : fparams) : fbody)) = makeNormalFunc env fparams fbody >>= defineVar env var
+evaluateExpr env (List (Atom "define" : ImproperList (Atom var : fparams) varargs : fbody)) = makeVarArgs varargs env fparams fbody >>= defineVar env var
+evaluateExpr env (List (Atom "lambda" : List fparams : fbody)) = makeNormalFunc env fparams fbody
+evaluateExpr env (List (Atom "lambda" : ImproperList fparams varargs : fbody)) = makeVarArgs varargs env fparams fbody
+evaluateExpr env (List (Atom "lambda" : varargs@(Atom _) : fbody)) = makeVarArgs varargs env [] fbody
+
+evaluateExpr env (List (func : args)) = do
+     f <- evaluateExpr env func
+     argVals <- mapM (evaluateExpr env) args
+     apply f argVals
+
+evaluateExpr _ badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm

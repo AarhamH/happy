@@ -1,5 +1,3 @@
- {-# LANGUAGE UnicodeSyntax #-}
-
 module Evaluator where 
 import Values
 import Operators

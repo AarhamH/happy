@@ -16,6 +16,7 @@ apply (Func fparams varargs fbody fclosure) args =
            bindVarArgs arg env = case arg of
                 Just argName -> liftIO $ bindVars env [(argName, List remainingArgs)]
                 Nothing -> return env
+apply (IOFunc func) args = func args
 apply _ _ = throwError $ Default "Unknown error"
 
 makeFunc :: Monad m => Maybe String -> IOEnvironment -> [Values] -> [Values] -> m Values

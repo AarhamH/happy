@@ -1,6 +1,5 @@
 module Evaluator where 
 import Values
-import Operators
 import Control.Monad.Except
 import Variables
 import Data.Maybe (isNothing)

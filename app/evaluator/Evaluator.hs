@@ -1,4 +1,4 @@
-module Evaluator where 
+module Evaluator where
 import Values
 import Control.Monad.Except
 import Variables
@@ -31,7 +31,7 @@ evaluateExpr _ val@(Number _) = return val
 evaluateExpr env (Atom fid) = getVar env fid
 evaluateExpr _ val@(Bool _) = return val
 evaluateExpr _ (List [Atom "quote", val]) = return val
-evaluateExpr env (List [Atom "if", p, c, a]) = 
+evaluateExpr env (List [Atom "if", p, c, a]) =
      do result <- evaluateExpr env p
         case result of
              Bool False -> evaluateExpr env a

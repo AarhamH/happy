@@ -6,6 +6,7 @@ import Text.ParserCombinators.Parsec ( ParseError )
 import Data.IORef
 import qualified Data.Functor
 import qualified Data.Maybe
+import GHC.IO.Handle
 
 data Values = Atom String
             | List [Values]
@@ -43,6 +44,8 @@ showValue (Func {params = args, vararg = varargs, body = _, closure = _}) =
       (case varargs of
          Nothing -> ""
          Just arg -> " . " ++ arg) ++ ") ...)"
+showValue (Port _) = "<IO Port>"
+showValue (IOFunc _) = "<IO primitive>"
 
 showError :: Errors -> String
 showError (UnboundVar msg var) = msg ++ ": " ++ var

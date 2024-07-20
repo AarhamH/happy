@@ -35,7 +35,7 @@ operators = [ ("+", numberOp (+))
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values
 numberOp _ [] = throwError $ ArgumentNumber 2 []
 numberOp _ singleVal@[_] = throwError $ ArgumentNumber 2 singleVal
-numberOp op params = mapM numberUnpacker params Data.Functor.<&> (Number . foldl1 op)
+numberOp op fparams = mapM numberUnpacker fparams Data.Functor.<&> (Number . foldl1 op)
 
 numberUnpacker :: Values -> ThrowsError Integer
 numberUnpacker (Number n) = return n

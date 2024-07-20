@@ -26,11 +26,11 @@ makeVarArgs :: Values -> IOEnvironment -> [Values] -> [Values] -> ExceptT Errors
 makeVarArgs = makeFunc . Just . showValue
 
 evaluateExpr :: IOEnvironment -> Values -> IOThrowsError Values
-evaluateExpr env val@(String _) = return val
-evaluateExpr env val@(Number _) = return val
-evaluateExpr env val@(Atom id) = getVar env id
-evaluateExpr env val@(Bool _) = return val
-evaluateExpr env (List [Atom "quote", val]) = return val
+evaluateExpr _ val@(String _) = return val
+evaluateExpr _ val@(Number _) = return val
+evaluateExpr env (Atom fid) = getVar env fid
+evaluateExpr _ val@(Bool _) = return val
+evaluateExpr _ (List [Atom "quote", val]) = return val
 evaluateExpr env (List [Atom "if", p, c, a]) = 
      do result <- evaluateExpr env p
         case result of

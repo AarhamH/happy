@@ -3,6 +3,55 @@ import Values
 import Control.Monad.Except
 import Variables
 import Data.Maybe (isNothing)
+import GHC.IO.IOMode
+import GHC.IO.Handle
+import System.IO
+import Parser
+
+ioPrimitives :: [(String, [Values] -> IOThrowsError Values)]
+ioPrimitives = [("apply", applyProc),
+                ("open-input-file", makePort ReadMode),
+                ("open-output-file", makePort WriteMode),
+                ("close-input-port", closePort),
+                ("close-output-port", closePort),
+                ("read", readProc),
+                ("write", writeProc),
+                ("read-contents", readContents),
+                ("read-all", readAll)]
+
+makePort :: IOMode -> [Values] -> IOThrowsError Values
+makePort mode [String filename] = fmap Port $ liftIO $ openFile filename mode
+makePort _ _ = throwError $ Default "Unknown error"
+
+closePort :: [Values] -> IOThrowsError Values
+closePort [Port port] = liftIO $ hClose port >> return (Bool True)
+closePort _           = return $ Bool False
+
+readProc :: [Values] -> IOThrowsError Values
+readProc []          = readProc [Port stdin]
+readProc [Port port] = liftIO (hGetLine port) >>= liftThrows . readExpr
+readProc _           = throwError $ Default "Unknown error"
+
+writeProc :: [Values] -> IOThrowsError Values
+writeProc [obj]            = writeProc [obj, Port System.IO.stdout]
+writeProc [obj, Port port] = liftIO $ hPrint port obj >> return (Bool True)
+writeProc _                = throwError $ Default "Unknown error"
+
+applyProc :: [Values] -> IOThrowsError Values
+applyProc [func, List args] = apply func args
+applyProc (func : args)     = apply func args
+applyProc _                 = throwError $ Default "Unknown error"
+
+readContents :: [Values] -> IOThrowsError Values
+readContents [String filename] = fmap String $ liftIO $ readFile filename
+readContents _ = throwError $ Default "Unknown error"
+
+load :: String -> IOThrowsError [Values]
+load filename = liftIO (readFile filename) >>= liftThrows . readExprList
+
+readAll :: [Values] -> IOThrowsError Values
+readAll [String filename] = List <$> load filename
+readAll _ = throwError $ Default "Unknown error"
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args
@@ -16,6 +65,7 @@ apply (Func fparams varargs fbody fclosure) args =
            bindVarArgs arg env = case arg of
                 Just argName -> liftIO $ bindVars env [(argName, List remainingArgs)]
                 Nothing -> return env
+apply (IOFunc func) args = func args
 apply _ _ = throwError $ Default "Unknown error"
 
 makeFunc :: Monad m => Maybe String -> IOEnvironment -> [Values] -> [Values] -> m Values
@@ -43,6 +93,7 @@ evaluateExpr env (List (Atom "define" : ImproperList (Atom var : fparams) vararg
 evaluateExpr env (List (Atom "lambda" : List fparams : fbody)) = makeNormalFunc env fparams fbody
 evaluateExpr env (List (Atom "lambda" : ImproperList fparams varargs : fbody)) = makeVarArgs varargs env fparams fbody
 evaluateExpr env (List (Atom "lambda" : varargs@(Atom _) : fbody)) = makeVarArgs varargs env [] fbody
+evaluateExpr env (List [Atom "load", String filename]) = load filename >>= fmap last . mapM (evaluateExpr env)
 
 evaluateExpr env (List (func : args)) = do
      f <- evaluateExpr env func

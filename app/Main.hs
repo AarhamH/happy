@@ -30,15 +30,16 @@ primitiveBindings :: IO IOEnvironment
 primitiveBindings = nullEnv >>= flip bindVars (map makePrimitiveFunc operators)
      where makePrimitiveFunc (var, func) = (var, PrimitiveFunc func)
 
-runOne :: String -> IO ()
-runOne expr = primitiveBindings >>= flip responsePrint expr
+runOne :: [String] -> IO ()
+runOne args = do
+    env <- primitiveBindings >>= flip bindVars [("args", List $ map String $ drop 1 args)]
+    runIOThrows (show <$> evaluateExpr env (List [Atom "load", String (head args)]))
+        >>= hPutStrLn stderr
 
 run :: IO ()
 run = primitiveBindings >>= killCondition (== "quit") (readInput "Lisp>>> ") . responsePrint
 
+
 main :: IO ()
 main = do args <- getArgs
-          case length args of
-               0 -> run
-               1 -> runOne $ head args
-               _ -> putStrLn "Program takes only 0 or 1 argument"
+          if null args then run else runOne args

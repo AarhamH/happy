@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-matches #-}
 module Parser where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
@@ -56,7 +55,13 @@ parseString = do
     _ <- char '"'
     return $ String x
 
-readExpr :: String -> ThrowsError Values
-readExpr input = case parse parseExpr "lisp" input of
-    Left err -> throwError $ Parser err
+readOrErr :: Parser a -> String -> ThrowsError a
+readOrErr parser input = case parse parser "lisp" input of
+    Left err  -> throwError $ Parser err
     Right val -> return val
+
+
+readExpr :: String -> ThrowsError Values
+readExpr = readOrErr parseExpr
+readExprList :: String -> ThrowsError [Values]
+readExprList = readOrErr (endBy parseExpr spaces)

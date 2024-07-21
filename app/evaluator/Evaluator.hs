@@ -3,6 +3,22 @@ import Values
 import Control.Monad.Except
 import Variables
 import Data.Maybe (isNothing)
+import GHC.IO.IOMode
+import GHC.IO.Handle
+import System.IO
+import Parser
+
+ioPrimitives :: [(String, [Values] -> IOThrowsError Values)]
+ioPrimitives = [("apply", applyProc),
+                ("open-input-file", makePort ReadMode),
+                ("open-output-file", makePort WriteMode),
+                ("close-input-port", closePort),
+                ("close-output-port", closePort),
+                ("read", readProc),
+                ("write", writeProc),
+                ("read-contents", readContents),
+                ("read-all", readAll)]
+
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args
@@ -44,6 +60,7 @@ evaluateExpr env (List (Atom "define" : ImproperList (Atom var : fparams) vararg
 evaluateExpr env (List (Atom "lambda" : List fparams : fbody)) = makeNormalFunc env fparams fbody
 evaluateExpr env (List (Atom "lambda" : ImproperList fparams varargs : fbody)) = makeVarArgs varargs env fparams fbody
 evaluateExpr env (List (Atom "lambda" : varargs@(Atom _) : fbody)) = makeVarArgs varargs env [] fbody
+evaluateExpr env (List [Atom "load", String filename]) = load filename >>= fmap last . mapM (evaluateExpr env)
 
 evaluateExpr env (List (func : args)) = do
      f <- evaluateExpr env func

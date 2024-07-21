@@ -3,9 +3,7 @@ module Parser where
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Values
 import Control.Monad.Except
-
-symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~a"
+import Symbols
 
 spaces :: Parser ()
 spaces = skipMany1 space

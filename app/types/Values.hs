@@ -7,6 +7,7 @@ import Data.IORef
 import qualified Data.Functor
 import qualified Data.Maybe
 import GHC.IO.Handle
+import Symbols
 
 data Values = Atom String
             | List [Values]
@@ -36,11 +37,11 @@ showValue (String contents) = "\"" ++ contents ++ "\""
 showValue (Number contents) = show contents
 showValue (List contents) = "(" ++ unwordsList contents ++ ")"
 showValue (ImproperList lhead ltail) = "(" ++ unwordsList lhead ++ " . " ++ showValue ltail ++ ")"
-showValue (Bool True) = "#t"
-showValue (Bool False) = "#f"
+showValue (Bool True) = lookupSymbol "true"
+showValue (Bool False) = lookupSymbol "false"
 showValue (PrimitiveFunc _) = "<primitive>"
 showValue (Func {params = args, vararg = varargs, body = _, closure = _}) =
-   "(lambda (" ++ unwords (map show args) ++
+   "(λ (" ++ unwords (map show args) ++
       (case varargs of
          Nothing -> ""
          Just arg -> " . " ++ arg) ++ ") ...)"
@@ -51,10 +52,10 @@ showError :: Errors -> String
 showError (UnboundVar msg var) = msg ++ ": " ++ var
 showError (BadSpecialForm msg form) = msg ++ ": " ++ show form
 showError (NotFunction msg f) = msg ++ ": " ++ show f
-showError (ArgumentNumber expect found) = "Expected " ++ show expect ++ " args; found values " ++ unwordsList found
-showError (TypeMismatch expect found) = "Invalid type: expected " ++ expect ++ ", found " ++ show found
-showError (Parser parseErr) = "Parse error at " ++ show parseErr
-showError (Default err) = "Error: " ++ err
+showError (ArgumentNumber expect found) = "Oh no, we want " ++ show expect ++ " args 🤭; found values " ++ unwordsList found
+showError (TypeMismatch expect found) = "Oops! Wrong type 🤭: expected " ++ expect ++ ", found " ++ show found
+showError (Parser parseErr) = "Sorry! Cannot parse 🤭" ++ show parseErr
+showError (Default err) = "There is an error 🤭: " ++ err
 
 instance Show Values where show = showValue
 instance Show Errors where show = showError

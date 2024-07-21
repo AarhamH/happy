@@ -3,9 +3,7 @@ module Parser where
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Values
 import Control.Monad.Except
-
-symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~a"
+import Symbols
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -56,7 +54,7 @@ parseString = do
     return $ String x
 
 readOrErr :: Parser a -> String -> ThrowsError a
-readOrErr parser input = case parse parser "lisp" input of
+readOrErr parser input = case parse parser "happy" input of
     Left err  -> throwError $ Parser err
     Right val -> return val
 

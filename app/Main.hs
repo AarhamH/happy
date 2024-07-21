@@ -37,7 +37,7 @@ runOne args = do
         >>= hPutStrLn stderr
 
 run :: IO ()
-run = primitiveBindings >>= killCondition (== "quit") (readInput "Lisp>>> ") . responsePrint
+run = primitiveBindings >>= killCondition (== "quit") (readInput "happy>>> ") . responsePrint
 
 
 main :: IO ()

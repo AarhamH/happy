@@ -21,7 +21,7 @@ ioPrimitives = [("apply", applyProc),
 
 makePort :: IOMode -> [Values] -> IOThrowsError Values
 makePort mode [String filename] = fmap Port $ liftIO $ openFile filename mode
-makePort _ _ = throwError $ Default "Unknown error"
+makePort _ _ = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 closePort :: [Values] -> IOThrowsError Values
 closePort [Port port] = liftIO $ hClose port >> return (Bool True)
@@ -30,28 +30,28 @@ closePort _           = return $ Bool False
 readProc :: [Values] -> IOThrowsError Values
 readProc []          = readProc [Port stdin]
 readProc [Port port] = liftIO (hGetLine port) >>= liftThrows . readExpr
-readProc _           = throwError $ Default "Unknown error"
+readProc _           = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 writeProc :: [Values] -> IOThrowsError Values
 writeProc [obj]            = writeProc [obj, Port System.IO.stdout]
 writeProc [obj, Port port] = liftIO $ hPrint port obj >> return (Bool True)
-writeProc _                = throwError $ Default "Unknown error"
+writeProc _                = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 applyProc :: [Values] -> IOThrowsError Values
 applyProc [func, List args] = apply func args
 applyProc (func : args)     = apply func args
-applyProc _                 = throwError $ Default "Unknown error"
+applyProc _                 = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 readContents :: [Values] -> IOThrowsError Values
 readContents [String filename] = fmap String $ liftIO $ readFile filename
-readContents _ = throwError $ Default "Unknown error"
+readContents _ = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 load :: String -> IOThrowsError [Values]
 load filename = liftIO (readFile filename) >>= liftThrows . readExprList
 
 readAll :: [Values] -> IOThrowsError Values
 readAll [String filename] = List <$> load filename
-readAll _ = throwError $ Default "Unknown error"
+readAll _ = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args
@@ -66,7 +66,7 @@ apply (Func fparams varargs fbody fclosure) args =
                 Just argName -> liftIO $ bindVars env [(argName, List remainingArgs)]
                 Nothing -> return env
 apply (IOFunc func) args = func args
-apply _ _ = throwError $ Default "Unknown error"
+apply _ _ = throwError $ Default "Whoops 🤭! There is an unknown error!"
 
 makeFunc :: Monad m => Maybe String -> IOEnvironment -> [Values] -> [Values] -> m Values
 makeFunc varargs env fparams fbody = return $ Func (map showValue fparams) varargs fbody env

@@ -3,33 +3,34 @@ module Operators where
 import Values
 import Control.Monad.Except
 import qualified Data.Functor
+import Symbols
 
 operators :: [(String, [Values] -> ThrowsError Values)]
-operators = [ ("+", numberOp (+))
-            , ("-", numberOp (-))
-            , ("*", numberOp (*))
-            , ("/", numberOp div)
-            , ("mod", numberOp mod)
-            , ("quotient", numberOp quot)
-            , ("remainder", numberOp rem)
-            , ("=", eqOp (==))
-            , ("~=", eqOp (/=))
-            , ("<=", eqOp (<=))
-            , (">=", eqOp (>=))
-            , ("<", eqOp (<))
-            , (">", eqOp (>))
-            , ("&&", boolOp (&&))
-            , ("||", boolOp (||))
-            , ("string=?", stringOp (==))
-            , ("string~=?", stringOp (/=))
-            , ("string>?", stringOp (>))
-            , ("string<?", stringOp (<))
-            , ("string>=?", stringOp (>=))
-            , ("string<=?", stringOp (<=))
-            , ("head", listHead)
-            , ("tail", listTail)
-            , ("cons", listConstruct)
-            , ("weq", weakEq)
+operators = [ (lookupSymbol "add", numberOp (+))
+            , (lookupSymbol "subtract", numberOp (-))
+            , (lookupSymbol "multiply", numberOp (*))
+            , (lookupSymbol "divide", numberOp div)
+            , (lookupSymbol "modulo", numberOp mod)
+            , (lookupSymbol "quotient", numberOp quot)
+            , (lookupSymbol "remainder", numberOp rem)
+            , (lookupSymbol "strong_equal", eqOp (==))
+            , (lookupSymbol "not_equal", eqOp (/=))
+            , (lookupSymbol "less_than_eq", eqOp (<=))
+            , (lookupSymbol "greater_than_eq", eqOp (>=))
+            , (lookupSymbol "less_than", eqOp (<))
+            , (lookupSymbol "greater_than", eqOp (>))
+            , (lookupSymbol "and", boolOp (&&))
+            , (lookupSymbol "or", boolOp (||))
+            , (lookupSymbol "strong_equal_str", stringOp (==))
+            , (lookupSymbol "not_equal_str", stringOp (/=))
+            , (lookupSymbol "greater_than_str", stringOp (>))
+            , (lookupSymbol "less_than_str", stringOp (<))
+            , (lookupSymbol "greater_than_eq_str", stringOp (>=))
+            , (lookupSymbol "less_than_eq_str", stringOp (<=))
+            , (lookupSymbol "head", listHead)
+            , (lookupSymbol "tail", listTail)
+            , (lookupSymbol "cons", listConstruct)
+            , (lookupSymbol "weak_eq", weakEq)
             ]
 
 numberOp :: (Integer -> Integer -> Integer) -> [Values] -> ThrowsError Values
@@ -100,6 +101,6 @@ weakEq [ImproperList xs x, ImproperList ys y] = weakEq [List $ xs ++ [x], List $
 weakEq [List a1, List a2] = return $ Bool $ length a1 == length a2 && all pairs (zip a1 a2)
         where pairs (x,y) = case weakEq [x,y] of
                 Right (Bool val) -> val
-                _ -> False 
+                _ -> False
 weakEq [_,_] = return $ Bool False
 weakEq badList = throwError $ ArgumentNumber 2 badList

@@ -42,6 +42,16 @@ applyProc [func, List args] = apply func args
 applyProc (func : args)     = apply func args
 applyProc _                 = throwError $ Default "Unknown error"
 
+readContents :: [Values] -> IOThrowsError Values
+readContents [String filename] = fmap String $ liftIO $ readFile filename
+readContents _ = throwError $ Default "Unknown error"
+
+load :: String -> IOThrowsError [Values]
+load filename = liftIO (readFile filename) >>= liftThrows . readExprList
+
+readAll :: [Values] -> IOThrowsError Values
+readAll [String filename] = List <$> load filename
+readAll _ = throwError $ Default "Unknown error"
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args

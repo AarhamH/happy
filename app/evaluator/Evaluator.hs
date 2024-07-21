@@ -19,6 +19,15 @@ ioPrimitives = [("apply", applyProc),
                 ("read-contents", readContents),
                 ("read-all", readAll)]
 
+makePort :: IOMode -> [Values] -> IOThrowsError Values
+makePort mode [String filename] = fmap Port $ liftIO $ openFile filename mode
+makePort _ _ = throwError $ Default "Unknown error"
+
+closePort :: [Values] -> IOThrowsError Values
+closePort [Port port] = liftIO $ hClose port >> return (Bool True)
+closePort _           = return $ Bool False
+
+
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values
 apply (PrimitiveFunc func) args = liftThrows $ func args

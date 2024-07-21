@@ -27,6 +27,20 @@ closePort :: [Values] -> IOThrowsError Values
 closePort [Port port] = liftIO $ hClose port >> return (Bool True)
 closePort _           = return $ Bool False
 
+readProc :: [Values] -> IOThrowsError Values
+readProc []          = readProc [Port stdin]
+readProc [Port port] = liftIO (hGetLine port) >>= liftThrows . readExpr
+readProc _           = throwError $ Default "Unknown error"
+
+writeProc :: [Values] -> IOThrowsError Values
+writeProc [obj]            = writeProc [obj, Port System.IO.stdout]
+writeProc [obj, Port port] = liftIO $ hPrint port obj >> return (Bool True)
+writeProc _                = throwError $ Default "Unknown error"
+
+applyProc :: [Values] -> IOThrowsError Values
+applyProc [func, List args] = apply func args
+applyProc (func : args)     = apply func args
+applyProc _                 = throwError $ Default "Unknown error"
 
 
 apply :: Values -> [Values] -> ExceptT Errors IO Values

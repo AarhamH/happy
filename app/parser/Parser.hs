@@ -54,7 +54,7 @@ parseString = do
     return $ String x
 
 readOrErr :: Parser a -> String -> ThrowsError a
-readOrErr parser input = case parse parser "lisp" input of
+readOrErr parser input = case parse parser "happy" input of
     Left err  -> throwError $ Parser err
     Right val -> return val
 

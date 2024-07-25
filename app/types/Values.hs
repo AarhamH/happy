@@ -52,10 +52,10 @@ showError :: Errors -> String
 showError (UnboundVar msg var) = msg ++ ": " ++ var
 showError (BadSpecialForm msg form) = msg ++ ": " ++ show form
 showError (NotFunction msg f) = msg ++ ": " ++ show f
-showError (ArgumentNumber expect found) = "Oh no, we want " ++ show expect ++ " args 🤭; found values " ++ unwordsList found
-showError (TypeMismatch expect found) = "Oops! Wrong type 🤭: expected " ++ expect ++ ", found " ++ show found
-showError (Parser parseErr) = "Sorry! Cannot parse 🤭" ++ show parseErr
-showError (Default err) = "There is an error 🤭: " ++ err
+showError (ArgumentNumber expect found) = "Oh no, we want " ++ show expect ++ " args; found values " ++ unwordsList found
+showError (TypeMismatch expect found) = "Oops! Wrong type: expected " ++ expect ++ ", found " ++ show found
+showError (Parser parseErr) = "Sorry! Cannot parse" ++ show parseErr
+showError (Default err) = "There is an error: " ++ err
 
 instance Show Values where show = showValue
 instance Show Errors where show = showError

@@ -5,13 +5,13 @@ import Data.IORef
 
 getVar :: IOEnvironment -> String -> IOThrowsError Values
 getVar envRef var  =  do env <- liftIO $ readIORef envRef
-                         maybe (throwError $ UnboundVar "Whoops 🤣! Getting unbound variable" var)
+                         maybe (throwError $ UnboundVar "Whoops! Getting unbound variable" var)
                                (liftIO . readIORef)
                                (lookup var env)
 
 setVar :: IOEnvironment -> String -> Values -> IOThrowsError Values
 setVar envRef var value = do env <- liftIO $ readIORef envRef
-                             maybe (throwError $ UnboundVar "LOL 😂!Setting an unbound variable" var)
+                             maybe (throwError $ UnboundVar "LOL! Setting an unbound variable" var)
                                    (liftIO . (`writeIORef` value))
                                    (lookup var env)
                              return value
